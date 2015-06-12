@@ -28,11 +28,11 @@
             fill: #1BBC9B;
         }
 
-        .subunit.Volcano { display: none; }
+        .subunit.Volcano { fill: #1BBC9B }
 
-        .subunit.Izu-shoto{ display: none; }
+        .subunit.Izu-shoto{ fill: #1BBC9B }
 
-        .subunit.Nansei-shoto{ display: none; }
+        .subunit.Nansei-shoto{ fill: #1BBC9B }
 
 
     </style>
@@ -43,30 +43,29 @@
 </body>
 
 <script>
-    var width = window.innerWidth,
-            height = window.innerHeight;
-    if(height < 700){
-        height = 700
-    }
+    var width = 960,
+            height = 1160;
 
     var projection = d3.geo.mercator()
             .center([130, 40.5])
             .scale(1800);
 
     var path = d3.geo.path()
-            .projection(projection);
+            .projection(projection)
+            .pointRadius(2);
 
-
-
-    var svg = d3.select('body').append("svg")
+    var svg = d3.select("body").append("svg")
             .attr("width", width)
             .attr("height", height);
 
-    d3.json('jpn1.json', function(error, output){
-        svg.selectAll('.subunit')
-                .data(topojson.feature(output, output.objects.subunits).features).enter().append("path")
-                .attr('class', function(d){
-                    return 'subunit ' + d.properties.name;
+    d3.json("jpn2.json", function(error, o) {
+        console.log(o.objects.subunits_jpn);
+        svg.selectAll(".subunit")
+                .data(topojson.feature(o, o.objects.subunits_jpn).features)
+                .enter().append("path")
+                .attr("class", function(d) {
+                    console.log(d.properties.name);
+                    return "subunit " + d.properties.name;
                 })
                 .attr('d', path);
     });
