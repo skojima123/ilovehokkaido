@@ -7,8 +7,11 @@
     <script src="bower_components/topojson/topojson.js"></script>
     <style>
 
+        .subunit {
+            fill: #56C3CC;
+        }
 
-        .subunit.Hokkaido {
+        .subunit.旭川市 {
             fill: #0F6177;
         }
 
@@ -28,7 +31,8 @@
             fill: #1BBC9B;
         }
 
-        .subunit.Volcano { fill: #1BBC9B }
+        .subunit.Volcano { fill: #6e89f3
+        }
 
         .subunit.Izu-shoto{ fill: #1BBC9B }
 
@@ -39,33 +43,60 @@
 
 </head>
 <body>
-
+<div id="map"></div>
 </body>
 
 <script>
-    var width = 960,
-            height = 1160;
+    var width = 1200,
+            height = 700;
 
-    var projection = d3.geo.mercator()
-            .center([130, 40.5])
-            .scale(1800);
+    var map = d3.select('#map')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .append('g');
 
-    var path = d3.geo.path()
-            .projection(projection)
-            .pointRadius(2);
+    var colorMap = {
+        '旭川市':'#0F6177',
+        //'室蘭市':'#E6E22E',
+        'えりも町':'#F3740E',
+        '札幌市':'red',
+        '稚内市':'green',
+        '泊村・留夜別村':'blue',
+        '留別村・紗那村・蘂取':'blue',
+        '色丹村':'blue',
+        '根室市':'#6E89F3',
+        '伊達市':'green'
+    }
 
-    var svg = d3.select("body").append("svg")
-            .attr("width", width)
-            .attr("height", height);
+    var getColorByCity = function(id){
+        console.log(colorMap[id])
+        return colorMap[id]
+    }
 
-    d3.json("jpn2.json", function(error, o) {
-        console.log(o.objects.subunits_jpn);
-        svg.selectAll(".subunit")
-                .data(topojson.feature(o, o.objects.subunits_jpn).features)
+    d3.json("./Hokkaido/hokkaido.topojson", function(error, o) {
+        console.log(o);
+        var center = d3.geo.centroid(topojson.feature(o, o.objects.hokkaido))
+        console.log(center);
+        var projection = d3.geo.mercator()
+                .center(center)
+                .scale(5000)
+                .translate([width / 2, height / 2]);
+
+        var path = d3.geo.path()
+                .projection(projection)
+                //.pointRadius(2);
+
+        //console.log(o.objects.hokkaido);
+        map.selectAll(".subunit")
+                .data(topojson.feature(o, o.objects.hokkaido).features)
                 .enter().append("path")
                 .attr("class", function(d) {
-                    console.log(d.properties.name);
-                    return "subunit " + d.properties.name;
+                    //console.log(d.id);
+                    return "subunit " + d.id;
+                })
+                .style('fill', function(d){
+                    return getColorByCity(d.id);
                 })
                 .attr('d', path);
     });
