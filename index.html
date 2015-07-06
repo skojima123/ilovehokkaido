@@ -5,38 +5,54 @@
     <title></title>
     <script src="bower_components/d3/d3.js"></script>
     <script src="bower_components/topojson/topojson.js"></script>
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/queue-async/queue.min.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
     <style>
+        #map {
+            background-color: white;
+            border: 1px solid black;
+        }
+
+        #tooltip {
+            position: absolute;
+            padding: 5px;
+            color: #000000;
+            font-size: 10px;
+            background: #e7e7e7;
+            border-style: solid;
+            border-width: 1px;
+            border-color: #c2c2c2;
+            opacity: 0.9;
+        }
+
+        #tooltip.hidden {
+            display: none;
+        }
+
+        .background {
+            fill: none;
+            pointer-events: all;
+        }
 
         .subunit {
-            fill: #56C3CC;
+            fill: #ddc;
+            stroke: black;
+            stroke-width: 0.1;
         }
 
-        .subunit.旭川市 {
-            fill: #0F6177;
-        }
-
-        .subunit.Honshu   {
-            fill: #0B8389;
-        }
-
-        .subunit.Shikoku {
-            fill: #1BA39C;
-        }
-
-        .subunit.Kyushu{
-            fill: #16A086;
-        }
-
-        .subunit.Japan{
-            fill: #1BBC9B;
-        }
-
-        .subunit.Volcano { fill: #6e89f3
-        }
-
-        .subunit.Izu-shoto{ fill: #1BBC9B }
-
-        .subunit.Nansei-shoto{ fill: #1BBC9B }
+        .q0-9 { fill:rgb(247,251,255); }
+        .q1-9 { fill:rgb(222,235,247); }
+        .q2-9 { fill:rgb(198,219,239); }
+        .q3-9 { fill:rgb(158,202,225); }
+        .q4-9 { fill:rgb(107,174,214); }
+        .q5-9 { fill:rgb(66,146,198); }
+        .q6-9 { fill:rgb(33,113,181); }
+        .q7-9 { fill:rgb(8,81,156); }
+        .q8-9 { fill:rgb(8,48,107); }
 
 
     </style>
@@ -44,63 +60,9 @@
 </head>
 <body>
 <div id="map"></div>
+<div id="tooltip" class="hidden"></div>
 </body>
 
-<script>
-    var width = 1200,
-            height = 700;
-
-    var map = d3.select('#map')
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height)
-            .append('g');
-
-    var colorMap = {
-        '旭川市':'#0F6177',
-        //'室蘭市':'#E6E22E',
-        'えりも町':'#F3740E',
-        '札幌市':'red',
-        '稚内市':'green',
-        '泊村・留夜別村':'blue',
-        '留別村・紗那村・蘂取':'blue',
-        '色丹村':'blue',
-        '根室市':'#6E89F3',
-        '伊達市':'green'
-    }
-
-    var getColorByCity = function(id){
-        console.log(colorMap[id])
-        return colorMap[id]
-    }
-
-    d3.json("./Hokkaido/hokkaido.topojson", function(error, o) {
-        console.log(o);
-        var center = d3.geo.centroid(topojson.feature(o, o.objects.hokkaido))
-        console.log(center);
-        var projection = d3.geo.mercator()
-                .center(center)
-                .scale(5000)
-                .translate([width / 2, height / 2]);
-
-        var path = d3.geo.path()
-                .projection(projection)
-                //.pointRadius(2);
-
-        //console.log(o.objects.hokkaido);
-        map.selectAll(".subunit")
-                .data(topojson.feature(o, o.objects.hokkaido).features)
-                .enter().append("path")
-                .attr("class", function(d) {
-                    //console.log(d.id);
-                    return "subunit " + d.id;
-                })
-                .style('fill', function(d){
-                    return getColorByCity(d.id);
-                })
-                .attr('d', path);
-    });
-
-</script>
+<script src="map2.js"></script>
 
 </html>
