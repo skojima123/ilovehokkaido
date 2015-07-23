@@ -28,30 +28,53 @@ var map = d3.select('#map')
 
 
 var populationById = d3.map();
+var deltaById = d3.map();
 
 var onMouseOver = function (d) {
     var xy = d3.mouse(document.body);
-    console.log('coordinate: ' + xy);
+    //console.log('coordinate: ' + xy);
     d3.select('#tooltip')
         .style('left', (xy[0] + 5) + 'px')
         .style('top', (xy[1] + 5) + 'px')
         .classed('hidden', false)
         //.text(d.id)
         .html("<li>" + d.id + "</li>" +
-        "<li>人口:" + populationById.get(d.id) + "</li>")
+        "<li>人口:" + deltaById.get(d.id) + "</li>");
+    //$(this).attr('border', '2px solid black');
+    //$(this).attr("fill-opacity", 0.5);
+    //d3.select(this)
+    //    .attr('fill-opacity', 0.4)
+    //    .style('stroke-width', 1)
+    //    .style('stroke', '#009688');
+
+    //$(this).attr("stroke-width", 5);
 }
 
 var onMouseOut = function(){
     d3.select('#tooltip')
         .classed('hidden', true)
         .text('');
+    //$(this).attr('border', '1px solid black');
+    //$(this).attr("fill-opacity", 1.0);
+    //d3.select(this)
+    //    .attr('fill-opacity',1.0)
+    //    .style('stroke', 'black')
+    //    .style('stroke-width', 0.1);
 }
 
 
-queue()
-    .defer(d3.json, "./Hokkaido/hokkaido.topojson")
+// order light -> dark
+var colorPaletteNegative = ["#E8EAF6", "#C5CAE9", "#9FA8DA", "#7986CB", "#5C6BC0", "#3F51B5", "#3949AB", "#303F9F", "#283593", "#1A237E"];
+var colorPalettePositive = ["#FFEBEE","#FFCDD2","#EF9A9A","#E57373","#EF5350","#F44336","#E53935","#D32F2F","#C62828","#B71C1C"];
+
+queue(1)
+    .defer(d3.json, "./Hokkaido/hokkaido_v3.topojson")
     .defer(d3.tsv, "./Hokkaido/population.tsv", function (d) {
         populationById.set(d.city_name, d.population);
+    })
+    .defer(d3.csv, "./Hokkaido/hokkaido_population_delta.csv", function(d){
+        console.log(d.delta);
+        deltaById.set(d.city, Number(d.delta));
     })
     .await(ready);
 
@@ -68,29 +91,34 @@ function ready(error, o) {
     var path = d3.geo.path()
         .projection(projection);
 
+    var dataSet = deltaById;
 
 
-    var populationData = populationById.values();
-    //console.log(population);
-
-    var maxPopulation = d3.max(populationData, function(d){
+    var max = d3.max(dataSet.values(), function(d){
         return Number(d);
     });
-    var minPopulation = d3.min(populationData, function(d){
+    var min = d3.min(dataSet.values(), function(d){
         return Number(d);
     });
-    console.log(maxPopulation);
+    //console.log(maxPopulation);
+    console.log(max);
+    console.log(min);
 
     var quantize = d3.scale.quantize()
-        .domain([minPopulation, maxPopulation])
+        .domain([min, max])
         .range(d3.range(9).map(function (idx) {
             return "q" + idx + "-9";
         }));
 
-    var quantizev2 = d3.scale.quantize()
-        .domain([minPopulation,maxPopulation])
-        .range(["#E8EAF6", "#C5CAE9", "#9FA8DA", "#7986CB", "#5C6BC0", "#3F51B5", "#3949AB", "#303F9F", "#283593", "#1A237E"]);
+    var quantizePositive = d3.scale.quantize()
+        .domain([0,max])
+        .range(colorPalettePositive);
+
+    var quantizevNegative = d3.scale.quantize()
+        .domain([min,0])
+        .range(colorPaletteNegative.reverse());
     //"#E8F5E9", "#C8E6C9", "#A5D6A7", "#81C784", "#66BB6A", "#4CAF50", "#43A047", "#388E3C", "#2E7D32", "#1B5E20"
+
 
         //.range(["#f7fcf5","#e5f5e0","#c7e9c0","#a1d99b","#74c476","#41ab5d","#238b45","#006d2c","#00441b"]);
 
@@ -100,10 +128,19 @@ function ready(error, o) {
         .enter().append("path")
         .attr('class', function (d) {
             //console.log(quantizev2(populationById.get(d.id)));
-            return "subunit " + quantize(populationById.get(d.id));
+            //return "subunit " + quantize(dataSet.get(d.id));
+            return "subunit";
+
         })
         .style('fill', function(d){
-            return quantizev2(populationById.get(d.id))
+            var val=dataSet.get(d.id);
+            if (val>0){
+                return quantizePositive(val);
+
+            } else {
+                return quantizevNegative(val);
+            }
+
         })
         .attr('d', path)
         .on('mouseover', onMouseOver)
