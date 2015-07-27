@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Sample</title>
+    <script src="bower_components/d3/d3.js"></script>
+
+
+</head>
+<body>
+<div id="sample"></div>
+<script>
+    var data = [10,20,30];
+
+    //make all blue color
+    var colorizer = function(selection, attr, color){
+        selection
+                .style(attr, color);
+    };
+
+    var s = d3.select('#sample')
+            .append('svg')  // append svg tag to id where div id is sample
+            .attr('width', 50)
+            .attr('height', 40)
+
+    var groups = s.append('g').selectAll('g')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr({
+                cx: function(d){
+                    return d;
+                },
+                cy: 10,
+                r: 5,
+                fill: 'green'
+            });
+
+    s.select('g')
+            .transition()
+            .duration(2000)
+            .attr('transform', 'translate(10,5) rotate(45)')
+
+
+    s.select('g').selectAll('circle')
+            .each(function(d,i){
+                d3.select(this)
+                        .transition()
+                        .delay(function(d,i){
+                            return i*1000;
+                        })
+                        .duration(1000)
+                        .call(colorizer, 'fill', 'red');
+            });
+
+
+</script>
+</body>
+</html>
