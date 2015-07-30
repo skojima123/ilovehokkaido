@@ -69,13 +69,26 @@ module.controller('MapCtrl', function ($scope, $http) {
     var colorPaletteNegative = ["#E8EAF6", "#C5CAE9", "#9FA8DA", "#7986CB", "#5C6BC0", "#3F51B5", "#3949AB", "#303F9F", "#283593", "#1A237E"];
     var colorPalettePositive = ["#FFEBEE", "#FFCDD2", "#EF9A9A", "#E57373", "#EF5350", "#F44336", "#E53935", "#D32F2F", "#C62828", "#B71C1C"];
 
+    function loader(url, callback){
+        $http.get(url)
+            .success(function(data,status){
+                console.log(data);
+                $scope.dataSet = data;
+
+            })
+            .error(function(data,status,error){
+
+            });
+    };
+
     queue(1)
         .defer(d3.json, "./Hokkaido/hokkaido_v4.topojson")
         .defer(d3.csv, "./Hokkaido/hokkaido_population_delta.csv", function (d) {
             //console.log(d.delta);
-            $scope.populationDeltaChange.set(d.city, [d.population, Number(d.delta).toFixed(1)]);
+            //$scope.populationDeltaChange.set(d.city, [d.population, Number(d.delta).toFixed(1)]);
             $scope.mapper[d.city]=[d.population, Number(d.delta).toFixed(1)];
         })
+        .defer(d3.json, "./Hokkaido/hokkaido_population_delta.json")
         .await(ready);
 
     $scope.rowClicked = function(k){
@@ -99,13 +112,23 @@ module.controller('MapCtrl', function ($scope, $http) {
         }
     }
 
-    function ready(error, topo) {
+    function ready(error, topo, o1, o2) {
 
         console.log('rendering map');
         //$scope.mapper = $scope.populationDeltaChange.entries();
         //console.log($scope.mapper);
 
+        //loader("./Hokkaido/hokkaido_population_delta.json")
+        $scope.dataSet = o2;
+
+        $scope.dataSet.forEach(function(e,i,a){
+            console.log(e);
+            $scope.populationDeltaChange.set(e.city, [e.population, Number(e.delta).toFixed(1)]);
+        })
+
         $scope.$apply();
+
+        console.log($scope.dataSet);
 
         var center = d3.geo.centroid(topojson.feature(topo, topo.objects.hokkaido))
         //console.log(center);
