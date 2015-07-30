@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="hokkaido_map">
+<head>
+    <meta charset="UTF-8">
+    <title>ILOVE北海道</title>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/topojson/topojson.js"></script>
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/queue-async/queue.min.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="mapStyle.css">
+    <link rel="stylesheet" type="text/css" href="table.css">
+    <script>
+        $(document).ready(function(){
+            $(window).resize(function(){
+                $(".height").height($(document).height());
+            });
+        });
+    </script>
+
+
+</head>
+<body>
+
+
+<div class="container-fluid" ng-controller="MapCtrl">
+    <div class="row">
+        <!-- Table View -->
+        <div class="col-md-2">
+            <h1>Table View</h1>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>City</th>
+                        <th>Population</th>
+                        <th>%change</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="(k,v) in mapper">
+                        <td>{{k}}</td>
+                        <td ng-repeat="e in v">{{e}}</td>
+
+
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- Map View -->
+        <div class="col-md-10">
+            <h1>Map View</h1>
+            <label>自治体名:</label>
+            <form>
+                <input type="text" ng-model="inputCity">{{inputCity}}
+                <select ng-model="selectedCity"
+                        ng-options="d in data">
+                    <option value=""></option>
+                </select>
+                {{selectedCity}}
+            </form>
+
+
+            <hr/>
+            <div id="tooltip" class="hidden"></div>
+            <div id="map"></div>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="map-angular.js"></script>
+
+
+</body>
+</html>
