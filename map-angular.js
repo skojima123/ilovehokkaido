@@ -164,5 +164,102 @@ module.controller('MapCtrl', function ($scope, $http) {
             .on('mouseover', onMouseOver)
             .on('mouseout', onMouseOut);
 
+
+
+
+
+
+        //legend functions
+        var raw_dataset = d3.range(1,10+1);
+        var palette = colorPalettePositive.reverse().concat(colorPaletteNegative.reverse())
+
+        var getRangePoints = function(){
+            function round(array, dps){
+                return array.map(function(e,i,a){
+                    return Math.round(e*Math.pow(10,dps))/Math.pow(10,dps);
+                })
+            }
+            var o = d3.scale.ordinal()
+                .domain(raw_dataset)
+                .rangePoints([0,max]);
+            var posRange = round(o.range(),2).reverse();
+            var rangeTxt = []
+            for (var i=0; i<posRange.length; i++){
+                if (i==0){
+                    rangeTxt.push(posRange[i]+ " ~");
+                    continue
+                }
+                rangeTxt.push(posRange[i]+" ~ "+posRange[i-1]);
+            }
+            var o1 = d3.scale.ordinal()
+                .domain(raw_dataset)
+                .rangePoints([min,0]);
+            var negRange = round(o1.range(),2).reverse();
+            for (var i=0; i<negRange.length; i++){
+                if (negRange[i+1]==undefined){
+                    rangeTxt.push(negRange[i]+" ~");
+                    break
+                }
+                rangeTxt.push(negRange[i]+" ~ "+negRange[i+1]);
+            }
+            console.log(rangeTxt)
+            return rangeTxt
+        }
+
+        var pts = getRangePoints();
+
+        map.append("text")
+            .attr('class','legend')
+            .attr({
+                fill:'black',
+                x:10,
+                y:10}
+            )
+            .text('人口増減率(%) 2007~2012')
+        // add legend to map svg
+        var legend = map.append('g')
+            .attr('class', 'legend')
+            .attr('transform', 'translate(10,5)');
+
+        legend.selectAll('rect')
+            .data(pts)
+            .enter()
+            .append('rect')
+            .attr('class', function(d,i){
+                return 'sublabel-'+ i.toString();
+            })
+            .attr({
+                x: 0,
+                y: function(d,i){
+                    //console.log(i);
+                    return (i+1)*20;
+                },
+                width: 20,
+                height: 10,
+                fill: function(d,i){
+                    //console.log(palette[i])
+                    return palette[i];
+                }
+            })
+            .style('stroke', 'white')
+            .style('stroke-width', 1);
+
+        legend.selectAll('text')
+            .data(pts)
+            .enter()
+            .append('text')
+            .attr('class', function(d,i){
+                return 'subunit-'+ i.toString();
+            })
+            .attr({
+                x:20+2,
+                y:function(d,i){
+                    return (i+1)*20+10;
+                }
+            })
+            .text(function(d){
+                return d.toString();
+            });
     }
+
 });
