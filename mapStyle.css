@@ -1,0 +1,64 @@
+#map {
+    background-color: white;
+    border: 1px solid whitesmoke;
+}
+
+
+#tooltip {
+    position: absolute;
+    padding: 5px;
+    color: #000000;
+    font-size: 10px;
+    background: #e7e7e7;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #c2c2c2;
+    opacity: 0.9;
+}
+
+#tooltip.hidden {
+    display: none;
+}
+
+.background {
+    fill: none;
+    pointer-events: all;
+}
+
+.subunit {
+    fill: #ddc;
+    stroke: black;
+    stroke-width: 0.1;
+}
+
+.legend {
+    font: 10px sans-serif;
+}
+
+/*.subunit:hover {*/
+/*stroke: green;*/
+/*stroke-width: 0.8;*/
+/*fill-opacity: 0.5;*/
+/*}*/
+
+
+/*.q0-9 { fill:rgb(247,251,255); }*/
+/*.q1-9 { fill:rgb(222,235,247); }*/
+/*.q2-9 { fill:rgb(198,219,239); }*/
+/*.q3-9 { fill:rgb(158,202,225); }*/
+/*.q4-9 { fill:rgb(107,174,214); }*/
+/*.q5-9 { fill:rgb(66,146,198); }*/
+/*.q6-9 { fill:rgb(33,113,181); }*/
+/*.q7-9 { fill:rgb(8,81,156); }*/
+/*.q8-9 { fill:rgb(8,48,107); }*/
+
+/*.Greens .q0-9{fill:rgb(247,252,245)}*/
+/*.Greens .q1-9{fill:rgb(229,245,224)}*/
+/*.Greens .q2-9{fill:rgb(199,233,192)}*/
+/*.Greens .q3-9{fill:rgb(161,217,155)}*/
+/*.Greens .q4-9{fill:rgb(116,196,118)}*/
+/*.Greens .q5-9{fill:rgb(65,171,93)}*/
+/*.Greens .q6-9{fill:rgb(35,139,69)}*/
+/*.Greens .q7-9{fill:rgb(0,109,44)}*/
+/*.Greens .q8-9{fill:rgb(0,68,27)}*/
+
