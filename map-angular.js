@@ -9,11 +9,12 @@ module.directive('viewDirective', function(){
 
 module.controller('MapCtrl', function ($scope, $http) {
 
-    var m_width = $('#map').width(),
-        width = 1000,
-        height = 500;
+    var colorPaletteNegative = ["#E8EAF6", "#C5CAE9", "#9FA8DA", "#7986CB", "#5C6BC0", "#3F51B5", "#3949AB", "#303F9F", "#283593", "#1A237E"];
+    var colorPalettePositive = ["#FFEBEE", "#FFCDD2", "#EF9A9A", "#E57373", "#EF5350", "#F44336", "#E53935", "#D32F2F", "#C62828", "#B71C1C"];
 
-    //console.log(m_width);
+    var m_width = $('#map').width(),
+        width = 1000, height = 500;
+
     var map = d3.select('#map')
         .append('svg')
         .attr('preserveAspectRatio', 'xMidYMid')
@@ -21,36 +22,33 @@ module.controller('MapCtrl', function ($scope, $http) {
         .attr('width', m_width)
         .attr('height', m_width * height / width);
 
-
-
-
-    $scope.populationDeltaChange = d3.map();
-
-    $scope.mapper = {};
-    $scope.data = [];
+    var popDeltaHash = d3.map();
 
     var onMouseOver = function (d) {
         var xy = d3.mouse(document.getElementById('map'));
         //console.log('coordinate: ' + xy);
-        var num = $scope.populationDeltaChange.get(d.id);
-        if (num !== undefined) {
-            var sign = "+";
-            if (num < 0) {
-                sign = "";
-            }
-            d3.select('#tooltip')
-                .style('left', (xy[0] + 5) + 'px')
-                .style('top', (xy[1] + 5) + 'px')
-                .classed('hidden', false)
-                //.text(d.id)
-                .html("<li>" + d.id + "</li>" +
-                "<li>人口推移:" + sign + num.toString() + "%</li>");
+        var nums = popDeltaHash.get(d.id);
+        if (nums!==undefined){
+            var num = nums[1];
+            if (num !== undefined) {
+                var sign = "+";
+                if (num < 0) {
+                    sign = "";
+                }
+                d3.select('#tooltip')
+                    .style('left', (xy[0] + 5) + 'px')
+                    .style('top', (xy[1] + 5) + 'px')
+                    .classed('hidden', false)
+                    //.text(d.id)
+                    .html("<li>" + d.id + "</li>" +
+                    "<li>人口推移:" + sign + num.toString() + "%</li>");
 
-            console.log(this);
-            d3.select(this)
-                .attr('fill-opacity', 0.4)
-                .style('stroke-width', 1)
-                .style('stroke', '#827717');
+                d3.select(this)
+                    .attr('fill-opacity', 0.4)
+                    .style('stroke-width', 1)
+                    .style('stroke', '#827717');
+            }
+
         }
 
     }
@@ -64,32 +62,6 @@ module.controller('MapCtrl', function ($scope, $http) {
             .style('stroke', 'black')
             .style('stroke-width', 0.1);
     }
-
-
-    var colorPaletteNegative = ["#E8EAF6", "#C5CAE9", "#9FA8DA", "#7986CB", "#5C6BC0", "#3F51B5", "#3949AB", "#303F9F", "#283593", "#1A237E"];
-    var colorPalettePositive = ["#FFEBEE", "#FFCDD2", "#EF9A9A", "#E57373", "#EF5350", "#F44336", "#E53935", "#D32F2F", "#C62828", "#B71C1C"];
-
-    function loader(url, callback){
-        $http.get(url)
-            .success(function(data,status){
-                console.log(data);
-                $scope.dataSet = data;
-
-            })
-            .error(function(data,status,error){
-
-            });
-    };
-
-    queue(1)
-        .defer(d3.json, "./Hokkaido/hokkaido_v4.topojson")
-        .defer(d3.csv, "./Hokkaido/hokkaido_population_delta.csv", function (d) {
-            //console.log(d.delta);
-            //$scope.populationDeltaChange.set(d.city, [d.population, Number(d.delta).toFixed(1)]);
-            $scope.mapper[d.city]=[d.population, Number(d.delta).toFixed(1)];
-        })
-        .defer(d3.json, "./Hokkaido/hokkaido_population_delta.json")
-        .await(ready);
 
     $scope.rowClicked = function(k){
         console.log("clicked: "+k);
@@ -112,23 +84,24 @@ module.controller('MapCtrl', function ($scope, $http) {
         }
     }
 
-    function ready(error, topo, o1, o2) {
+    queue(1)
+        .defer(d3.json, "./Hokkaido/hokkaido_v4.topojson")
+        .defer(d3.json, "./Hokkaido/hokkaido_population_delta_v2.json")
+        .await(ready);
+
+
+    function ready(error, topo, json) {
 
         console.log('rendering map');
-        //$scope.mapper = $scope.populationDeltaChange.entries();
-        //console.log($scope.mapper);
-
-        //loader("./Hokkaido/hokkaido_population_delta.json")
-        $scope.dataSet = o2;
+        $scope.dataSet = json;
 
         $scope.dataSet.forEach(function(e,i,a){
-            console.log(e);
-            $scope.populationDeltaChange.set(e.city, [e.population, Number(e.delta).toFixed(1)]);
-        })
+            popDeltaHash.set(e.city, [e.population, Number(e.delta).toFixed(1)]);
+        });
 
         $scope.$apply();
 
-        console.log($scope.dataSet);
+        //console.log($scope.dataSet);
 
         var center = d3.geo.centroid(topojson.feature(topo, topo.objects.hokkaido))
         //console.log(center);
@@ -140,10 +113,10 @@ module.controller('MapCtrl', function ($scope, $http) {
         var path = d3.geo.path()
             .projection(projection);
 
-        var max = d3.max($scope.populationDeltaChange.values(), function (d) {
+        var max = d3.max(popDeltaHash.values(), function (d) {
             return Number(d[1]);
         });
-        var min = d3.min($scope.populationDeltaChange.values(), function (d) {
+        var min = d3.min(popDeltaHash.values(), function (d) {
             return Number(d[1]);
         });
 
@@ -169,14 +142,14 @@ module.controller('MapCtrl', function ($scope, $http) {
                 return d.id;
             })
             .attr('class', function (d) {
-                var val = $scope.populationDeltaChange.get(d.id);
+                var val = popDeltaHash.get(d.id);
                 if (val!==undefined){
                     //console.log(val[1]);
                     return "subunit " + quantize(val[1]);
                 }
             })
             .style('fill', function (d) {
-                var val = $scope.populationDeltaChange.get(d.id);
+                var val = popDeltaHash.get(d.id);
 
                 if (val===undefined){
                     return "#ddc";
@@ -186,7 +159,6 @@ module.controller('MapCtrl', function ($scope, $http) {
                 } else {
                     return quantizeNegative(val[1]);
                 }
-
             })
             .attr('d', path)
             .on('mouseover', onMouseOver)
