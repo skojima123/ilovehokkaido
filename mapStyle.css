@@ -32,8 +32,47 @@
 }
 
 .legend {
-    font: 10px sans-serif;
+    font: 9px sans-serif;
 }
+
+.on-mouse {
+    fill-opacity: 0.4;
+    stroke-width: 1;
+    stroke: #827717;
+    fill: green !important;
+}
+
+.off-mouse {
+    fill-opacity: 1.0;
+    stroke: black;
+    stroke-width: 0.1;
+}
+
+/*color palette*/
+
+.n-9 {fill: #E8EAF6}
+.n-8 {fill: #C5CAE9}
+.n-7 {fill: #9FA8DA}
+.n-6 {fill: #7986CB}
+.n-5 {fill: #5C6BC0}
+.n-4 {fill: #3F51B5}
+.n-3 {fill: #3949AB}
+.n-2 {fill: #303F9F}
+.n-1 {fill: #283593}
+.n-0 {fill: #1A237E}
+
+.p-0 {fill:#FFEBEE}
+.p-1 {fill:#FFCDD2}
+.p-2 {fill:#EF9A9A}
+.p-3 {fill:#E57373}
+.p-4 {fill:#EF5350}
+.p-5 {fill:#F44336}
+.p-6 {fill:#E53935}
+.p-7 {fill:#D32F2F}
+.p-8 {fill:#C62828}
+.p-9 {fill: #B71C1C}
+
+.not-defined {fill: #ddc}
 
 /*.subunit:hover {*/
 /*stroke: green;*/

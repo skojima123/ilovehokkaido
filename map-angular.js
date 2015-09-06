@@ -45,9 +45,6 @@ module.controller('MapCtrl', function ($scope, $http) {
 
                 d3.select(this)
                     .classed('on-mouse',true)
-                    //.attr('fill-opacity', 0.4)
-                    //.style('stroke-width', 1)
-                    //.style('stroke', '#827717');
             }
 
         }
@@ -68,10 +65,6 @@ module.controller('MapCtrl', function ($scope, $http) {
             var pathId = "#" + k;
             d3.selectAll(pathId)
                 .classed('on-mouse-click',true)
-            //d3.selectAll(pathId)
-            //    .attr('fill-opacity', 0.4)
-            //    .style('stroke-width', 1)
-            //    .style('stroke', '#827717');
         }
     }
 
@@ -124,7 +117,8 @@ module.controller('MapCtrl', function ($scope, $http) {
         var quantize = d3.scale.quantize()
             .domain([min, max])
             .range(d3.range(9).map(function (idx) {
-                return "q" + idx;
+
+                return "n-" + idx;
             }));
 
         var quantizePositive = d3.scale.quantize()
@@ -134,6 +128,19 @@ module.controller('MapCtrl', function ($scope, $http) {
         var quantizeNegative = d3.scale.quantize()
             .domain([min, 0])
             .range(colorPaletteNegative.reverse());
+
+        var quantizeNegative_v2 = d3.scale.quantize()
+            .domain([min, 0])
+            .range(d3.range(10).map(function(idx){
+                return idx;
+            }));
+
+        var quantizePositive_v2 = d3.scale.quantize()
+            .domain([0, max])
+            .range(d3.range(10).map(function(idx){
+                return idx;
+            }));
+
 
         map.selectAll(".subunit")
             .data(topojson.feature(topo, topo.objects.hokkaido).features)
@@ -146,21 +153,14 @@ module.controller('MapCtrl', function ($scope, $http) {
                 var val = popDeltaHash.get(d.id);
                 if (val !== undefined) {
                     //console.log(val[1]);
-                    return "subunit " + quantize(val[1]);
+                    //return "subunit " + quantize(val[1]);
+                    if (val[1]>0){
+                        return "subunit p-" + quantizePositive_v2(val[1])
+                    } else {
+                        return "subunit n-" + quantizeNegative_v2(val[1])
+                    }
                 }
-            })
-            .style('fill', function (d) {
-                var val = popDeltaHash.get(d.id);
-
-                if (val === undefined) {
-                    return "#ddc";
-                }
-                if (val[1] > 0) {
-                    return quantizePositive(val[1]);
-                } else {
-                    console.log("id:" + d.id +"negative:"+ val[1])
-                    return quantizeNegative(val[1]);
-                }
+                return "not-defined";
             })
             .attr('d', path)
             .on('mouseover', onMouseOver)
