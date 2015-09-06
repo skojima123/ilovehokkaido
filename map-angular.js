@@ -1,9 +1,9 @@
 var module = angular.module('hokkaido_map', []);
 
 
-module.directive('viewDirective', function(){
+module.directive('viewDirective', function () {
     return {
-        template: '<h1>HokkaidoMapView</h1>'
+        template: '<h1>MapView</h1>'
     };
 });
 
@@ -28,7 +28,7 @@ module.controller('MapCtrl', function ($scope, $http) {
         var xy = d3.mouse(document.getElementById('map'));
         //console.log('coordinate: ' + xy);
         var nums = popDeltaHash.get(d.id);
-        if (nums!==undefined){
+        if (nums !== undefined) {
             var num = nums[1];
             if (num !== undefined) {
                 var sign = "+";
@@ -44,9 +44,10 @@ module.controller('MapCtrl', function ($scope, $http) {
                     "<li>人口推移:" + sign + num.toString() + "%</li>");
 
                 d3.select(this)
-                    .attr('fill-opacity', 0.4)
-                    .style('stroke-width', 1)
-                    .style('stroke', '#827717');
+                    .classed('on-mouse',true)
+                    //.attr('fill-opacity', 0.4)
+                    //.style('stroke-width', 1)
+                    //.style('stroke', '#827717');
             }
 
         }
@@ -58,25 +59,25 @@ module.controller('MapCtrl', function ($scope, $http) {
             .classed('hidden', true)
             .text('');
         d3.select(this)
-            .attr('fill-opacity', 1.0)
-            .style('stroke', 'black')
-            .style('stroke-width', 0.1);
+            .classed('on-mouse', false)
     }
 
-    $scope.rowClicked = function(k){
-        console.log("clicked: "+k);
-        if (k!==undefined){
-            var pathId = "#"+k;
+    $scope.rowClicked = function (k) {
+        console.log("clicked: " + k);
+        if (k !== undefined) {
+            var pathId = "#" + k;
             d3.selectAll(pathId)
-                .attr('fill-opacity', 0.4)
-                .style('stroke-width', 1)
-                .style('stroke', '#827717');
+                .classed('on-mouse-click',true)
+            //d3.selectAll(pathId)
+            //    .attr('fill-opacity', 0.4)
+            //    .style('stroke-width', 1)
+            //    .style('stroke', '#827717');
         }
     }
 
-    $scope.rowLeft = function(k){
-        if (k!==undefined){
-            var pathId = "#"+k;
+    $scope.rowLeft = function (k) {
+        if (k !== undefined) {
+            var pathId = "#" + k;
             d3.selectAll(pathId)
                 .attr('fill-opacity', 1.0)
                 .style('stroke', 'black')
@@ -95,7 +96,7 @@ module.controller('MapCtrl', function ($scope, $http) {
         console.log('rendering map');
         $scope.dataSet = json;
 
-        $scope.dataSet.forEach(function(e,i,a){
+        $scope.dataSet.forEach(function (e, i, a) {
             popDeltaHash.set(e.city, [e.population, Number(e.delta).toFixed(1)]);
         });
 
@@ -123,7 +124,7 @@ module.controller('MapCtrl', function ($scope, $http) {
         var quantize = d3.scale.quantize()
             .domain([min, max])
             .range(d3.range(9).map(function (idx) {
-                return "q" + idx + "-9";
+                return "q" + idx;
             }));
 
         var quantizePositive = d3.scale.quantize()
@@ -143,7 +144,7 @@ module.controller('MapCtrl', function ($scope, $http) {
             })
             .attr('class', function (d) {
                 var val = popDeltaHash.get(d.id);
-                if (val!==undefined){
+                if (val !== undefined) {
                     //console.log(val[1]);
                     return "subunit " + quantize(val[1]);
                 }
@@ -151,12 +152,13 @@ module.controller('MapCtrl', function ($scope, $http) {
             .style('fill', function (d) {
                 var val = popDeltaHash.get(d.id);
 
-                if (val===undefined){
+                if (val === undefined) {
                     return "#ddc";
                 }
                 if (val[1] > 0) {
                     return quantizePositive(val[1]);
                 } else {
+                    console.log("id:" + d.id +"negative:"+ val[1])
                     return quantizeNegative(val[1]);
                 }
             })
@@ -165,78 +167,74 @@ module.controller('MapCtrl', function ($scope, $http) {
             .on('mouseout', onMouseOut);
 
 
-
-
-
-
         //legend functions
-        var raw_dataset = d3.range(1,10+1);
+        var raw_dataset = d3.range(1, 10 + 1);
         var palette = colorPalettePositive.reverse().concat(colorPaletteNegative.reverse())
 
-        var getRangePoints = function(){
-            function round(array, dps){
-                return array.map(function(e,i,a){
-                    return Math.round(e*Math.pow(10,dps))/Math.pow(10,dps);
+        var getRangePoints = function () {
+            function round(array, dps) {
+                return array.map(function (e, i, a) {
+                    return Math.round(e * Math.pow(10, dps)) / Math.pow(10, dps);
                 })
             }
+
             var o = d3.scale.ordinal()
                 .domain(raw_dataset)
-                .rangePoints([0,max]);
-            var posRange = round(o.range(),2).reverse();
+                .rangePoints([0, max]);
+            var posRange = round(o.range(), 2).reverse();
             var rangeTxt = []
-            for (var i=0; i<posRange.length; i++){
-                if (i==0){
-                    rangeTxt.push(posRange[i]+ " ~");
+            for (var i = 0; i < posRange.length; i++) {
+                if (i == 0) {
+                    rangeTxt.push(posRange[i] + " ~");
                     continue
                 }
-                rangeTxt.push(posRange[i]+" ~ "+posRange[i-1]);
+                rangeTxt.push(posRange[i] + " ~ " + posRange[i - 1]);
             }
             var o1 = d3.scale.ordinal()
                 .domain(raw_dataset)
-                .rangePoints([min,0]);
-            var negRange = round(o1.range(),2).reverse();
-            for (var i=0; i<negRange.length; i++){
-                if (negRange[i+1]==undefined){
-                    rangeTxt.push(negRange[i]+" ~");
-                    break
+                .rangePoints([min, 0]);
+            var negRange = round(o1.range(), 2).reverse();
+            for (var i = 0; i < negRange.length; i++) {
+                if (negRange[i + 1] == undefined) {
+                    rangeTxt.push(negRange[i] + " ~");
+                    break;
                 }
-                rangeTxt.push(negRange[i]+" ~ "+negRange[i+1]);
+                rangeTxt.push(negRange[i] + " ~ " + negRange[i + 1]);
             }
-            console.log(rangeTxt)
-            return rangeTxt
+            return rangeTxt;
         }
 
         var pts = getRangePoints();
 
         map.append("text")
-            .attr('class','legend')
+            .attr('class', 'legend')
             .attr({
-                fill:'black',
-                x:10,
-                y:10}
-            )
-            .text('人口増減率(%) 2007~2012')
+                fill: 'black',
+                x: 30,
+                y: 20})
+            .text('人口増減率(%) 2007~2012');
+
         // add legend to map svg
         var legend = map.append('g')
             .attr('class', 'legend')
-            .attr('transform', 'translate(10,5)');
+            .attr('transform', 'translate(15,10)');
 
         legend.selectAll('rect')
             .data(pts)
             .enter()
             .append('rect')
-            .attr('class', function(d,i){
-                return 'sublabel-'+ i.toString();
+            .attr('class', function (d, i) {
+                return 'sublabel-' + i.toString();
             })
             .attr({
                 x: 0,
-                y: function(d,i){
+                y: function (d, i) {
                     //console.log(i);
-                    return (i+1)*20;
+                    return (i + 1) * 20;
                 },
                 width: 20,
                 height: 10,
-                fill: function(d,i){
+                fill: function (d, i) {
                     //console.log(palette[i])
                     return palette[i];
                 }
@@ -248,16 +246,16 @@ module.controller('MapCtrl', function ($scope, $http) {
             .data(pts)
             .enter()
             .append('text')
-            .attr('class', function(d,i){
-                return 'subunit-'+ i.toString();
+            .attr('class', function (d, i) {
+                return 'subunit-' + i.toString();
             })
             .attr({
-                x:20+2,
-                y:function(d,i){
-                    return (i+1)*20+10;
+                x: 20 + 2,
+                y: function (d, i) {
+                    return (i + 1) * 20 + 10;
                 }
             })
-            .text(function(d){
+            .text(function (d) {
                 return d.toString();
             });
     }
