@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="bower_components/d3/d3.js"></script>
+
+</head>
+<body>
+
+<div id="svg-area"></div>
+<script>
+    var dataset = [0,1,2,3,4,5,6,7,8,9],
+            dataLength = dataset.length,
+            w = 400,
+            h = 300,
+            center = { "x" : w/2, "y" : h/2 },
+            radius = 80,
+            interval = 360/dataLength,
+            colors = d3.scale.category10().range();
+
+
+    //キャンバス作成
+    var svg = d3.select("#svg-area")
+            .append("svg")
+            .attr({width:w,height:h});
+
+    //初期表示
+    svg.selectAll("circle")
+            .data(dataset)
+            .enter()
+            .append("circle")
+            .attr({
+                cx: center.x,
+                cy: center.y,
+                r: 1,
+                fill : function(d,i){ return colors[i]; }
+            })
+            .transition()
+            .delay( function(d,i){ return (i+1)*1000; } )
+            .duration(10000)
+            .ease("elastic")
+            .attr({
+                cx: function(d,i){ return position(i,"x"); },
+                cy: function(d,i){ return position(i,"y"); },
+                r: 10
+            });
+
+    function position(i,axis) {
+        angle = interval * i * (Math.PI/180);
+        x = radius*Math.sin(angle)+ center.x;
+        y = -radius*Math.cos(angle) + center.y;
+        if( axis == 'x' ){
+            return x;
+        } else {
+            return y;
+        }
+    }
+</script>
+
+</body>
+</html>

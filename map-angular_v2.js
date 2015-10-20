@@ -114,7 +114,7 @@ module.controller('MapCtrl', function ($scope, $http) {
 
         var quantizeNegative = d3.scale.quantize()
             .domain([min, 0])
-            .range(d3.range(10).map(function(idx){
+            .range(d3.range(10).reverse().map(function(idx){
                 return idx;
             }));
 
@@ -124,7 +124,28 @@ module.controller('MapCtrl', function ($scope, $http) {
                 return idx;
             }));
 
+        var showPopulationData = function(){
+            console.log('text clicked')
+            map.selectAll(".subunit")
+                .each(function(){
+                    var id = d3.select(this).attr('id')
+                    d3.select(this)
+                        .attr('class', function (d) {
+                            var val = popDeltaHash.get(d.id);
+                            if (val !== undefined) {
+                                if (val[1]>0){
+                                    return "subunit p-" + quantizePositive(val[1])
+                                } else {
+                                    return "subunit n-" + quantizeNegative(val[1])
+                                }
+                            }
+                            return "not-defined";
+                        })
+                })
+        }
 
+
+        //render map
         map.selectAll(".subunit")
             .data(topojson.feature(topo, topo.objects.hokkaido).features)
             .enter()
@@ -132,25 +153,25 @@ module.controller('MapCtrl', function ($scope, $http) {
             .attr('id', function (d) {
                 return d.id;
             })
-            .attr('class', function (d) {
-                var val = popDeltaHash.get(d.id);
-                if (val !== undefined) {
-                    if (val[1]>0){
-                        return "subunit p-" + quantizePositive(val[1])
-                    } else {
-                        return "subunit n-" + quantizeNegative(val[1])
-                    }
-                }
-                return "not-defined";
-            })
+            .attr('class', 'subunit')
             .attr('d', path)
             .on('mouseover', onMouseOver)
             .on('mouseout', onMouseOut);
 
 
+        map.append("text")
+            .attr('class', 'select-text')
+            .attr({
+                fill: 'black',
+                x: 300,
+                y: 20})
+            .text('人口増減率を表示する')
+            .on('click', showPopulationData)
+
+
         //legend functions
         var raw_dataset = d3.range(1, 10 + 1);
-        var palette = colorPalettePositive.reverse().concat(colorPaletteNegative.reverse())
+        var palette = colorPalettePositive.reverse().concat(colorPaletteNegative)
 
         var getRangePoints = function () {
             function round(array, dps) {
@@ -187,6 +208,7 @@ module.controller('MapCtrl', function ($scope, $http) {
 
         var pts = getRangePoints();
 
+        //render legend box
         map.append("text")
             .attr('class', 'legend')
             .attr({

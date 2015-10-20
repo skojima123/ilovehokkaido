@@ -31,21 +31,26 @@ var populationById = d3.map();
 var deltaById = d3.map();
 
 var onMouseOver = function (d) {
-    var xy = d3.mouse(document.body);
+    var xy = d3.mouse(document.getElementById('map'));
     //console.log('coordinate: ' + xy);
+    var num = deltaById.get(d.id);
+    var sign = "+";
+    if (num<0){
+        sign = "";
+    }
     d3.select('#tooltip')
         .style('left', (xy[0] + 5) + 'px')
         .style('top', (xy[1] + 5) + 'px')
         .classed('hidden', false)
         //.text(d.id)
         .html("<li>" + d.id + "</li>" +
-        "<li>人口:" + deltaById.get(d.id) + "</li>");
+        "<li>人口推移:" + sign + num.toString() + "%</li>");
     //$(this).attr('border', '2px solid black');
     //$(this).attr("fill-opacity", 0.5);
-    //d3.select(this)
-    //    .attr('fill-opacity', 0.4)
-    //    .style('stroke-width', 1)
-    //    .style('stroke', '#009688');
+    d3.select(this)
+        .attr('fill-opacity', 0.4)
+        .style('stroke-width', 1)
+        .style('stroke', '#827717');
 
     //$(this).attr("stroke-width", 5);
 }
@@ -56,10 +61,10 @@ var onMouseOut = function(){
         .text('');
     //$(this).attr('border', '1px solid black');
     //$(this).attr("fill-opacity", 1.0);
-    //d3.select(this)
-    //    .attr('fill-opacity',1.0)
-    //    .style('stroke', 'black')
-    //    .style('stroke-width', 0.1);
+    d3.select(this)
+        .attr('fill-opacity',1.0)
+        .style('stroke', 'black')
+        .style('stroke-width', 0.1);
 }
 
 
@@ -68,13 +73,13 @@ var colorPaletteNegative = ["#E8EAF6", "#C5CAE9", "#9FA8DA", "#7986CB", "#5C6BC0
 var colorPalettePositive = ["#FFEBEE","#FFCDD2","#EF9A9A","#E57373","#EF5350","#F44336","#E53935","#D32F2F","#C62828","#B71C1C"];
 
 queue(1)
-    .defer(d3.json, "./Hokkaido/hokkaido_v3.topojson")
+    .defer(d3.json, "./Hokkaido/hokkaido_v4.topojson")
     .defer(d3.tsv, "./Hokkaido/population.tsv", function (d) {
         populationById.set(d.city_name, d.population);
     })
     .defer(d3.csv, "./Hokkaido/hokkaido_population_delta.csv", function(d){
         console.log(d.delta);
-        deltaById.set(d.city, Number(d.delta));
+        deltaById.set(d.city, Number(d.delta).toFixed(1));
     })
     .await(ready);
 
@@ -114,7 +119,9 @@ function ready(error, o) {
         .domain([0,max])
         .range(colorPalettePositive);
 
-    var quantizevNegative = d3.scale.quantize()
+    console.log(quantizePositive.range())
+
+    var quantizeNegative = d3.scale.quantize()
         .domain([min,0])
         .range(colorPaletteNegative.reverse());
     //"#E8F5E9", "#C8E6C9", "#A5D6A7", "#81C784", "#66BB6A", "#4CAF50", "#43A047", "#388E3C", "#2E7D32", "#1B5E20"
@@ -125,11 +132,12 @@ function ready(error, o) {
 
     map.selectAll(".subunit")
         .data(topojson.feature(o, o.objects.hokkaido).features)
-        .enter().append("path")
+        .enter()
+        .append("path")
         .attr('class', function (d) {
             //console.log(quantizev2(populationById.get(d.id)));
-            //return "subunit " + quantize(dataSet.get(d.id));
-            return "subunit";
+            return "subunit " + quantize(dataSet.get(d.id));
+            //return "subunit";
 
         })
         .style('fill', function(d){
@@ -138,7 +146,7 @@ function ready(error, o) {
                 return quantizePositive(val);
 
             } else {
-                return quantizevNegative(val);
+                return quantizeNegative(val);
             }
 
         })

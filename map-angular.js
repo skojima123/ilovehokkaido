@@ -64,7 +64,7 @@ module.controller('MapCtrl', function ($scope, $http) {
         if (k !== undefined) {
             var pathId = "#" + k;
             d3.selectAll(pathId)
-                .classed('on-mouse-click',true)
+                .classed('on-mouse',true)
         }
     }
 
@@ -72,9 +72,7 @@ module.controller('MapCtrl', function ($scope, $http) {
         if (k !== undefined) {
             var pathId = "#" + k;
             d3.selectAll(pathId)
-                .attr('fill-opacity', 1.0)
-                .style('stroke', 'black')
-                .style('stroke-width', 0.1);
+                .classed('on-mouse',false);
         }
     }
 
@@ -114,28 +112,13 @@ module.controller('MapCtrl', function ($scope, $http) {
             return Number(d[1]);
         });
 
-        var quantize = d3.scale.quantize()
-            .domain([min, max])
-            .range(d3.range(9).map(function (idx) {
-
-                return "n-" + idx;
-            }));
-
-        var quantizePositive = d3.scale.quantize()
-            .domain([0, max])
-            .range(colorPalettePositive);
-
         var quantizeNegative = d3.scale.quantize()
-            .domain([min, 0])
-            .range(colorPaletteNegative.reverse());
-
-        var quantizeNegative_v2 = d3.scale.quantize()
             .domain([min, 0])
             .range(d3.range(10).map(function(idx){
                 return idx;
             }));
 
-        var quantizePositive_v2 = d3.scale.quantize()
+        var quantizePositive = d3.scale.quantize()
             .domain([0, max])
             .range(d3.range(10).map(function(idx){
                 return idx;
@@ -152,12 +135,10 @@ module.controller('MapCtrl', function ($scope, $http) {
             .attr('class', function (d) {
                 var val = popDeltaHash.get(d.id);
                 if (val !== undefined) {
-                    //console.log(val[1]);
-                    //return "subunit " + quantize(val[1]);
                     if (val[1]>0){
-                        return "subunit p-" + quantizePositive_v2(val[1])
+                        return "subunit p-" + quantizePositive(val[1])
                     } else {
-                        return "subunit n-" + quantizeNegative_v2(val[1])
+                        return "subunit n-" + quantizeNegative(val[1])
                     }
                 }
                 return "not-defined";

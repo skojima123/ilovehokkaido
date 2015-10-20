@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+<head>
+
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/topojson/topojson.js"></script>
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/queue-async/queue.min.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="mapStyle.css">
+    <link rel="stylesheet" type="text/css" href="table.css">
+    <!-- <script src="test.js"></script> -->
+</head>
+<body>
+
+<div ng-controller="SampleCtrl">
+
+        <select ng-model="item" ng-options="d for d in data"></select>
+        {{item}}
+
+
+</div>
+<script>
+    var module = angular.module('app',[]);
+    module.controller('SampleCtrl', function($scope){
+        $scope.data = [1,2,3,4,5];
+
+    });
+</script>
+</body>
+</html>
