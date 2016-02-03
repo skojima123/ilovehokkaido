@@ -1,7 +1,7 @@
 
 require 'json'
 
-file_path = '/Users/kojima37/Documents/map/Hokkaido/hokkaido.json'
+file_path = './map/Hokkaido/hokkaido.json'
 data = open(file_path) do |io|
   JSON.load(io)
 end
@@ -30,7 +30,7 @@ features.each do |f|
   end
 end
 
-File.open('/Users/kojima37/Documents/map/Hokkaido/hokkaido_name_map.json',"w") do |io|
+File.open('./Hokkaido/hokkaido_name_map.json',"w") do |io|
   p io.puts JSON.pretty_generate(map_hash)
 end
 
